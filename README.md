@@ -1,6 +1,9 @@
 # :snake: py-serpent
 # Informations
-Implémentation de l'algorithme de chiffrement Serpent en python3, basé sur le travail de Frank Stajano
+Implémentation de l'algorithme de chiffrement Serpent en python3, basé sur le travail de Frank Stajano<br>
+Chiffrement de bloc de 128bits avec une clés de 256bits<br>
+Fonctionnement possible en ECB, CBC, PCBC et CFB<br>
+Hashage du mot de passe et du vecteur d'initialisation en pbkdf2_hmac sha256<br>
 ## <ins>Prérequis</ins>
 - Python 3
 - Module Python 3:
