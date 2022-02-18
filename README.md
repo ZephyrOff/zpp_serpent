@@ -11,7 +11,7 @@ Implémentation de l'algorithme de chiffrement Serpent en python3
 ### Fonctionnement
 <figure>
 <img src="Image/ECB_Encrypt.png">
-<figcaption align = "center">Chiffrement en ECB</figcaption>
+<center>Centered text</center>
 </figure>
 
 ![ECB_Decrypt](Image/ECB_Decrypt.png)
