@@ -9,8 +9,10 @@ Implémentation de l'algorithme de chiffrement Serpent en python3
 # Traitement sur un texte en bytes
 ## <ins>_Electronic codebook (ECB)_</ins>
 ### Fonctionnement
-![ECB_Encrypt](Image/ECB_Encrypt.png)
-*image_caption*
+<figure>
+<img src="Image/ECB_Encrypt.png">
+<figcaption align = "center">Chiffrement en ECB</figcaption>
+</figure>
 
 ![ECB_Decrypt](Image/ECB_Decrypt.png)
 ### Chiffrement
