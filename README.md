@@ -1,47 +1,112 @@
 # :snake: py-serpent
 # Informations
-Implémentation de l'algorithme de chiffrement Serpent en python3
+Implémentation de l'algorithme de chiffrement Serpent en python3, basé sur le travail de Frank Stajano
 ## <ins>Prérequis</ins>
 - Python 3
 - Module Python 3:
    - bitstring
+<br>
 
 # Traitement sur un texte en bytes
 ## <ins>_Electronic codebook (ECB)_</ins>
 ### Fonctionnement
-<figure>
-<img src="Image/ECB_Encrypt.png">
-<center>Centered text</center>
-</figure>
+<p align="center">
+  <kbd>
+  <img src="Image/ECB_Encrypt.png" title="ECB Encryt" border="5">
+  </kbd>
+  Chiffrement en ECB
+</p>
+<br>
+<p align="center">
+  <kbd>
+  <img src="Image/ECB_Decrypt.png" title="ECB Decrypt" border="5">
+  </kbd>
+  Dechiffrement en ECB
+</p>
 
-![ECB_Decrypt](Image/ECB_Decrypt.png)
 ### Chiffrement
-### Dechiffrement
-## <ins>_Cipher block chaining (CBC)_</ins>
-### Fonctionnement
-![CBC_Encrypt](Image/CBC_Encrypt.png) "Texte"
-
-![CBC_Decrypt](Image/CBC_Decrypt.png)
-### Chiffrement
-### Dechiffrement
-## <ins>_Propagating cipher block chaining (PCBC)_</ins>
-### Fonctionnement
-![PCBC_Encrypt](Image/PCBC_Encrypt.png)
-
-![PCBC_Decrypt](Image/PCBC_Decrypt.png)
-### Chiffrement
-### Dechiffrement
-## <ins>_Cipher feedback (CFB)_</ins>
-### Fonctionnement
-![CFB_Encrypt](Image/CFB_Encrypt.png)
-
-![CFB_Decrypt](Image/CFB_Decrypt.png)
-### Chiffrement
+```python
+encrypted = serpent.encrypt_ECB(cleartext, password)
+```
 ### Dechiffrement
 ```python
-
+plain = serpent.decrypt_ECB(encrypted,password)
 ```
+<br>
 
-Configurer les identifiants du compte administrateur de Gitea
-![gitea_admin_account](Image/gitea_admin_account.png)
+## <ins>_Cipher block chaining (CBC)_</ins>
+### Fonctionnement
+<p align="center">
+  <kbd>
+  <img src="Image/CBC_Encrypt.png" title="CBC Encryt" border="5">
+  </kbd>
+  Chiffrement en CBC
+</p>
+<br>
+<p align="center">
+  <kbd>
+  <img src="Image/CBC_Decrypt.png" title="CBC Decrypt" border="5">
+  </kbd>
+  Dechiffrement en CBC
+</p>
 
+### Chiffrement
+```python
+encrypted = serpent.encrypt_CBC(cleartext, password)
+```
+### Dechiffrement
+```python
+plain = serpent.decrypt_CBC(encrypted, password)
+```
+<br>
+
+## <ins>_Propagating cipher block chaining (PCBC)_</ins>
+### Fonctionnement
+<p align="center">
+  <kbd>
+  <img src="Image/PCBC_Encrypt.png" title="PCBC Encryt" border="5">
+  </kbd>
+  Chiffrement en PCBC
+</p>
+<br>
+<p align="center">
+  <kbd>
+  <img src="Image/PCBC_Decrypt.png" title="PCBC Decrypt" border="5">
+  </kbd>
+  Dechiffrement en PCBC
+</p>
+
+### Chiffrement
+```python
+encrypted = serpent.encrypt_PCBC(cleartext, password)
+```
+### Dechiffrement
+```python
+plain = serpent.decrypt_PCBC(encrypted, password)
+```
+<br>
+
+## <ins>_Cipher feedback (CFB)_</ins>
+### Fonctionnement
+<p align="center">
+  <kbd>
+  <img src="Image/CFB_Encrypt.png" title="CFB Encryt" border="5">
+  </kbd>
+  Chiffrement en CFB
+</p>
+<br>
+<p align="center">
+  <kbd>
+  <img src="Image/CFB_Decrypt.png" title="CFB Decrypt" border="5">
+  </kbd>
+  Dechiffrement en CFB
+</p>
+
+### Chiffrement
+```python
+encrypted = serpent.encrypt_CFB(cleartext, password)
+```
+### Dechiffrement
+```python
+plain = serpent.decrypt_CFB(encrypted, password)
+```
