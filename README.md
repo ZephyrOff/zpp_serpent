@@ -2,6 +2,7 @@
 # Informations
 Implémentation de l'algorithme de chiffrement Serpent en python3, basé sur le travail de Frank Stajano<br>
 Chiffrement de bloc de 128bits avec une clés de 256bits<br>
+Utilisation du padding RFC2040 pour le remplissage de bloc incomplet<br>
 Fonctionnement possible en ECB, CBC, PCBC et CFB<br>
 Hashage du mot de passe et du vecteur d'initialisation en pbkdf2_hmac sha256<br>
 ## <ins>Prérequis</ins>
