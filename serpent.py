@@ -1,3 +1,15 @@
+####################################################################
+#/ Nom du projet: py-serpent                                      /#
+#/ Nom du fichier: serpent.py                                     /#
+#/ Type de fichier: fichier principal                             /#
+#/ Fichier annexe:                                                /#
+#/                                                                /#
+#/ Auteur: ZephyrOff  (Alexandre Pajak)                           /#
+#/ Version: 2.2                                                   /#
+#/ Description: Implémentation du chiffrement Serpent             /#
+#/ Date: 26/02/2022                                               /#
+####################################################################
+
 import re
 import os
 import hashlib
@@ -91,42 +103,105 @@ def decrypt(cipherText, userKey):
 
     return plainText
 
-def encrypt_ECB(plainText,userKey,hash_type='sha256',SALT_SIZE=16):
+def encrypt_ECB(plainText,userKey,hash_type='sha256',SALT_SIZE=16,lvl=2):
     salt = os.urandom(SALT_SIZE)
-    userKey = hashlib.pbkdf2_hmac(hash_type, userKey, salt, 100000,dklen=KEY_SIZE)
+    key = hashlib.pbkdf2_hmac(hash_type, userKey, salt, 100000,dklen=KEY_SIZE)
 
-    key = BitArray(userKey).bin
+    key = BitArray(key).bin
     cleartext = BitArray(plainText).bin
-    liste = re.findall('.{1,128}', cleartext)
+    result=BitArray(bin=encrypt(BitArray(salt).bin,BitArray(hashlib.sha256(userKey).digest()).bin)).bytes
 
-    result=salt
-    for bloc in liste:
+    if len(cleartext)<=128:
+        lvl=1
+        bloclist = []
+        bloclist.append(cleartext)
+    else:
+        bloclist = re.findall('.{1,128}', cleartext)
+
+        if lvl==1:
+            liste = bloclist[0:len(bloclist)-1]
+        elif lvl==2:
+            liste = bloclist[0:len(bloclist)-2]
+
+
+        for bloc in liste:
+            encrypted = encrypt(bloc, key)
+            result += BitArray(bin=encrypted).bytes
+
+    if lvl==1:
+        bloc = bloclist[len(bloclist)-1]
         if len(bloc)!=128:
             bloc = add_rembour(bloc)
-
         encrypted = encrypt(bloc, key)
         result += BitArray(bin=encrypted).bytes
+
+    elif lvl==2:
+        blocA = encrypt(bloclist[len(bloclist)-2],key)
+        blocB = bloclist[len(bloclist)-1]
+        sbreak = 128-len(blocB)
+        blocA2 = blocA[0:len(blocA)-sbreak]
+        blocAdd = blocA[len(blocA)-sbreak:len(blocA)]
+
+        blocB2 = encrypt(blocB+blocAdd,key)
+
+        result += BitArray(bin=blocB2).bytes
+        result += BitArray(bin=blocA2).bytes
+
     return result
 
-def encrypt_CBC(plainText,userKey,hash_type='sha256',SALT_SIZE=16):
+def encrypt_CBC(plainText,userKey,hash_type='sha256',SALT_SIZE=16,lvl=2):
     salt = os.urandom(SALT_SIZE)
     derived = hashlib.pbkdf2_hmac(hash_type, userKey, salt, 100000,dklen=IV_SIZE + KEY_SIZE)
 
     key = BitArray(derived[IV_SIZE:]).bin
     cleartext = BitArray(plainText).bin
     iv = BitArray(derived[0:IV_SIZE]).bin
-    liste = re.findall('.{1,128}', cleartext)
+    result=BitArray(bin=encrypt(BitArray(salt).bin,BitArray(hashlib.sha256(userKey).digest()).bin)).bytes
+    
+    if len(cleartext)<=128:
+        lvl=1
+        bloclist = []
+        bloclist.append(cleartext)
+    else:
+        bloclist = re.findall('.{1,128}', cleartext)
 
-    result=salt
-    for bloc in liste:
+        if lvl==1:
+            liste = bloclist[0:len(bloclist)-1]
+        elif lvl==2:
+            liste = bloclist[0:len(bloclist)-2]
+
+        for bloc in liste:
+            bloc = binaryXor(bloc,iv)
+            encrypted = encrypt(bloc, key)
+
+            iv = encrypted
+            result += BitArray(bin=encrypted).bytes
+
+    if lvl==1:
+        bloc = bloclist[len(bloclist)-1]
         if len(bloc)!=128:
             bloc = add_rembour(bloc)
 
         bloc = binaryXor(bloc,iv)
         encrypted = encrypt(bloc, key)
-
-        iv = encrypted
         result += BitArray(bin=encrypted).bytes
+
+    elif lvl==2:
+        blocA = binaryXor(bloclist[len(bloclist)-2], iv)
+        blocA = encrypt(blocA,key)
+
+        blocB = bloclist[len(bloclist)-1]
+        sbreak = 128-len(blocB)
+
+        blocA2 = blocA[0:len(blocA)-sbreak]
+
+        blocB += "0"*sbreak
+        blocB = binaryXor(blocA, blocB)
+        blocB2 = encrypt(blocB,key)
+
+        result += BitArray(bin=blocB2).bytes
+        result += BitArray(bin=blocA2).bytes
+
     return result
 
 def encrypt_CFB(plainText,userKey,hash_type='sha256',SALT_SIZE=16):
@@ -138,7 +213,7 @@ def encrypt_CFB(plainText,userKey,hash_type='sha256',SALT_SIZE=16):
     iv = BitArray(derived[0:IV_SIZE]).bin
     liste = re.findall('.{1,128}', cleartext)
 
-    result=salt
+    result=BitArray(bin=encrypt(BitArray(salt).bin,BitArray(hashlib.sha256(userKey).digest()).bin)).bytes
     for bloc in liste:
         if len(bloc)!=128:
             bloc = add_rembour(bloc)
@@ -158,7 +233,8 @@ def encrypt_PCBC(plainText,userKey,hash_type='sha256',SALT_SIZE=16):
     iv = BitArray(derived[0:IV_SIZE]).bin
     liste = re.findall('.{1,128}', cleartext)
 
-    result=salt
+    result=BitArray(bin=encrypt(BitArray(salt).bin,BitArray(hashlib.sha256(userKey).digest()).bin)).bytes
+
     for bloc in liste:
         if len(bloc)!=128:
             bloc = add_rembour(bloc)
@@ -169,48 +245,99 @@ def encrypt_PCBC(plainText,userKey,hash_type='sha256',SALT_SIZE=16):
         result += BitArray(bin=encrypted).bytes
     return result
 
-def decrypt_ECB(cipherText,userKey,hash_type='sha256',SALT_SIZE=16):
-    salt = cipherText[0:SALT_SIZE]
-    userKey = hashlib.pbkdf2_hmac(hash_type, userKey, salt, 100000,dklen=KEY_SIZE)
+def decrypt_ECB(cipherText,userKey,hash_type='sha256',SALT_SIZE=16,lvl=2):
+    salt = BitArray(bin=decrypt(BitArray(cipherText[0:SALT_SIZE]).bin,BitArray(hashlib.sha256(userKey).digest()).bin)).bytes
+    key = hashlib.pbkdf2_hmac(hash_type, userKey, salt, 100000,dklen=KEY_SIZE)
 
-    key = BitArray(userKey).bin
+    key = BitArray(key).bin
     cipherText = BitArray(cipherText[SALT_SIZE:]).bin
-    liste = re.findall('.{1,128}', cipherText)
-
     result=b""
-    for bloc in liste[0:len(liste)-1]:
-        encrypted = decrypt(bloc, key)
-        result += BitArray(bin=encrypted).bytes
 
-    last_bloc = decrypt(liste[len(liste)-1], key)
-    result+=del_rembour(last_bloc)
+    if len(cipherText)<=128:
+        lvl=1
+        bloclist = []
+        bloclist.append(cipherText)
+    else:
+        bloclist = re.findall('.{1,128}', cipherText)
+
+        if lvl==1:
+            liste = bloclist[0:len(bloclist)-1]
+        elif lvl==2:
+            liste = bloclist[0:len(bloclist)-2]
+
+        for bloc in liste:
+            encrypted = decrypt(bloc, key)
+            result += BitArray(bin=encrypted).bytes
+
+    if lvl==1:
+        last_bloc = decrypt(bloclist[len(bloclist)-1], key)
+        result+=del_rembour(last_bloc)
+    elif lvl==2:
+        blocA = decrypt(bloclist[len(bloclist)-2],key)
+        blocB = bloclist[len(bloclist)-1]
+        sbreak = 128-len(blocB)
+
+        blocA2 = blocA[0:len(blocA)-sbreak]
+        blocAdd = blocA[len(blocA)-sbreak:len(blocA)]
+
+        blocB2 = decrypt(blocB+blocAdd,key)
+
+        result += BitArray(bin=blocB2).bytes
+        result += BitArray(bin=blocA2).bytes
 
     return result
 
-def decrypt_CBC(cipherText,userKey,hash_type='sha256',SALT_SIZE=16):
-    salt = cipherText[0:SALT_SIZE]
+def decrypt_CBC(cipherText,userKey,hash_type='sha256',SALT_SIZE=16,lvl=2):
+    salt = BitArray(bin=decrypt(BitArray(cipherText[0:SALT_SIZE]).bin,BitArray(hashlib.sha256(userKey).digest()).bin)).bytes
     derived = hashlib.pbkdf2_hmac(hash_type, userKey, salt, 100000,dklen=IV_SIZE + KEY_SIZE)
 
     key = BitArray(derived[IV_SIZE:]).bin
     cipherText = BitArray(cipherText[SALT_SIZE:]).bin
     iv = BitArray(derived[0:IV_SIZE]).bin
-    liste = re.findall('.{1,128}', cipherText)
-
     result=b""
-    for bloc in liste[0:len(liste)-1]:
-        encrypted = decrypt(bloc, key)
-        encrypted = binaryXor(encrypted,iv)
-        result += BitArray(bin=encrypted).bytes
-        iv = bloc
 
-    last_bloc = decrypt(liste[len(liste)-1], key)
-    last_bloc = binaryXor(last_bloc,iv)
-    result+=del_rembour(last_bloc)
+    if len(cipherText)<=128:
+        lvl=1
+        bloclist = []
+        bloclist.append(cipherText)
+    else:
+        bloclist = re.findall('.{1,128}', cipherText)
+
+        if lvl==1:
+            liste = bloclist[0:len(bloclist)-1]
+        elif lvl==2:
+            liste = bloclist[0:len(bloclist)-2]
+
+        for bloc in liste:
+            encrypted = decrypt(bloc, key)
+            encrypted = binaryXor(encrypted,iv)
+            result += BitArray(bin=encrypted).bytes
+            iv = bloc
+
+    if lvl==1:
+        last_bloc = decrypt(bloclist[len(bloclist)-1], key)
+        last_bloc = binaryXor(last_bloc,iv)
+        result+=del_rembour(last_bloc)
+    elif lvl==2:
+        blocA = bloclist[len(bloclist)-2]
+        blocB = bloclist[len(bloclist)-1]
+        sbreak = 128-len(blocB)
+
+        blocA = decrypt(blocA, key)
+
+        blocB+=blocA[len(blocA)-sbreak:len(blocA)]
+        blocA = binaryXor(blocA,blocB)
+
+        blocB = decrypt(blocB,key)
+        blocB = binaryXor(blocB,iv)
+
+        result += BitArray(bin=blocB).bytes
+        result += BitArray(bin=blocA).bytes
 
     return result
 
 def decrypt_CFB(cipherText,userKey,hash_type='sha256',SALT_SIZE=16):
-    salt = cipherText[0:SALT_SIZE]
+    salt = BitArray(bin=decrypt(BitArray(cipherText[0:SALT_SIZE]).bin,BitArray(hashlib.sha256(userKey).digest()).bin)).bytes
     derived = hashlib.pbkdf2_hmac(hash_type, userKey, salt, 100000,dklen=IV_SIZE + KEY_SIZE)
 
     key = BitArray(derived[IV_SIZE:]).bin
@@ -232,7 +359,7 @@ def decrypt_CFB(cipherText,userKey,hash_type='sha256',SALT_SIZE=16):
     return result
 
 def decrypt_PCBC(cipherText,userKey,hash_type='sha256',SALT_SIZE=16):
-    salt = cipherText[0:SALT_SIZE]
+    salt = BitArray(bin=decrypt(BitArray(cipherText[0:SALT_SIZE]).bin,BitArray(hashlib.sha256(userKey).digest()).bin)).bytes
     derived = hashlib.pbkdf2_hmac(hash_type, userKey, salt, 100000,dklen=IV_SIZE + KEY_SIZE)
 
     key = BitArray(derived[IV_SIZE:]).bin
@@ -265,7 +392,6 @@ def add_rembour(bloc):
     return bloc
 
 def del_rembour(bloc):
-    result=b""
     for i in range(32,0,-1):
         if i<10:
             bour="0"+str(i)
@@ -273,9 +399,9 @@ def del_rembour(bloc):
             bour=str(i)
         pattern = (BitArray(hex=bour).bin)*i
         if bloc.endswith(pattern):
-            result+=BitArray(bin=bloc[:-(i*8)]).bytes
-            break
-    return result
+            return BitArray(bin=bloc[:-(i*8)]).bytes
+            
+    return BitArray(bin=bloc).bytes
 
 def makeSubkeys(userKey):
     w = {}
