@@ -1,4 +1,4 @@
-# :snake: py-serpent
+# :snake: zpp_serpent
 # Informations
 Implémentation de l'algorithme de chiffrement Serpent en python3, basé sur le travail de Frank Stajano<br>
 Chiffrement de bloc de 128bits avec une clés de 256bits<br>
@@ -10,6 +10,11 @@ Hashage du mot de passe et du vecteur d'initialisation en pbkdf2_hmac sha256 ave
 - Module Python 3:
    - bitstring
 <br>
+
+# Installation
+```console
+pip install zpp_serpent
+```
 
 # Utilisation
 ## <ins>_Electronic codebook (ECB)_</ins>
@@ -25,11 +30,11 @@ Hashage du mot de passe et du vecteur d'initialisation en pbkdf2_hmac sha256 ave
 
 ### Chiffrement
 ```python
-encrypted = serpent.encrypt_ECB(cleartext, password)
+encrypted = zpp_serpent.encrypt_ECB(cleartext, password)
 ```
 ### Dechiffrement
 ```python
-plain = serpent.decrypt_ECB(encrypted,password)
+plain = zpp_serpent.decrypt_ECB(encrypted,password)
 ```
 <br>
 
@@ -51,11 +56,11 @@ plain = serpent.decrypt_ECB(encrypted,password)
 
 ### Chiffrement
 ```python
-encrypted = serpent.encrypt_CBC(cleartext, password)
+encrypted = zpp_serpent.encrypt_CBC(cleartext, password)
 ```
 ### Dechiffrement
 ```python
-plain = serpent.decrypt_CBC(encrypted, password)
+plain = zpp_serpent.decrypt_CBC(encrypted, password)
 ```
 <br>
 
@@ -77,11 +82,11 @@ plain = serpent.decrypt_CBC(encrypted, password)
 
 ### Chiffrement
 ```python
-encrypted = serpent.encrypt_PCBC(cleartext, password)
+encrypted = zpp_serpent.encrypt_PCBC(cleartext, password)
 ```
 ### Dechiffrement
 ```python
-plain = serpent.decrypt_PCBC(encrypted, password)
+plain = zpp_serpent.decrypt_PCBC(encrypted, password)
 ```
 <br>
 
@@ -102,11 +107,12 @@ plain = serpent.decrypt_PCBC(encrypted, password)
 
 ### Chiffrement
 ```python
-encrypted = serpent.encrypt_CFB(cleartext, password)
+encrypted = zpp_serpent.encrypt_CFB(cleartext, password)
 ```
 ### Dechiffrement
 ```python
-plain = serpent.decrypt_CFB(encrypted, password)
+plain = zpp_
+serpent.decrypt_CFB(encrypted, password)
 ```
 <br>
 

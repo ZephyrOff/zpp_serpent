@@ -1,5 +1,5 @@
 ####################################################################
-#/ Nom du projet: py-serpent                                      /#
+#/ Nom du projet: py-zpp_serpent                                  /#
 #/ Nom du fichier: serpent.py                                     /#
 #/ Type de fichier: fichier principal                             /#
 #/ Fichier annexe:                                                /#
