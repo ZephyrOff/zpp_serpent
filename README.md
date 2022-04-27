@@ -111,8 +111,7 @@ encrypted = zpp_serpent.encrypt_CFB(cleartext, password)
 ```
 ### Dechiffrement
 ```python
-plain = zpp_
-serpent.decrypt_CFB(encrypted, password)
+plain = zpp_serpent.decrypt_CFB(encrypted, password)
 ```
 <br>
 
